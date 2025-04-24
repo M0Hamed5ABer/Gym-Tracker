@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>Gym Tracker</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
       * {
         margin: 0;
@@ -108,15 +108,22 @@
     <button id="saveData">💾 حفظ التغييرات</button>
     <button id="expandChart">🖼️ تكبير/تصغير المخطط</button>
     <canvas id="progressChart"></canvas>
-    <button id="clearChart">🗑️ مسح المخطط</button>
+    <button id="clearChart">🗑️ مسح</button>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       // التمارين
       const exercises = {
-        "تمارين الدفع": ["دفع ارضي", "دفع عالي", "فراشة", "كتف جانبي", "كتف علوي", "باي علي الجهاز"],
+        "تمارين الدفع": [
+          "دفع ارضي",
+          "دفع عالي",
+          "فراشة",
+          "كتف جانبي",
+          "كتف علوي",
+          "باي علي الجهاز",
+        ],
         "تمارين السحب": ["سحب أرضي", "سحب عالي", "بايسبس"],
-        "تمارين الرجل": ["سكوات", "لانج", "سمي ديدلفت"]
+        "تمارين الرجل": ["سكوات", "لانج", "سمي ديدلفت"],
       };
 
       const trackerDiv = document.getElementById("tracker");
@@ -139,7 +146,9 @@
               <p>${exercise}</p>
               <div class="controls">
                 <button onclick="changeWeight('${exercise}', -2.5)">⬇</button>
-                <input id="${exercise}-weight" type="number" value="${getLastWeight(exercise)}" readonly>
+                <input id="${exercise}-weight" type="number" value="${getLastWeight(
+              exercise
+            )}" readonly>
                 <button onclick="changeWeight('${exercise}', 2.5)">⬆</button>
               </div>
             `;
@@ -179,32 +188,33 @@
         let labels = [];
         for (let ex in progressData) {
           const data = progressData[ex];
-          const weights = data.map(d => d.weight);
-          const dates = data.map(d => d.date);
+          const weights = data.map((d) => d.weight);
+          const dates = data.map((d) => d.date);
           labels = [...new Set([...labels, ...dates])]; // دمج التواريخ بدون تكرار
 
           datasets.push({
             label: ex,
             data: weights,
-            borderColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+            borderColor:
+              "#" + Math.floor(Math.random() * 16777215).toString(16),
             fill: false,
-            tension: 0.3
+            tension: 0.3,
           });
         }
 
         chart = new Chart(chartCtx, {
-          type: 'line',
+          type: "line",
           data: {
             labels: labels,
-            datasets: datasets
+            datasets: datasets,
           },
           options: {
             responsive: true,
             plugins: {
-              legend: { position: 'bottom' },
-              title: { display: true, text: 'تطور الأوزان حسب التاريخ' }
-            }
-          }
+              legend: { position: "bottom" },
+              title: { display: true, text: "تطور الأوزان حسب التاريخ" },
+            },
+          },
         });
       }
 
@@ -213,12 +223,17 @@
           localStorage.removeItem("progressData");
           progressData = {};
           if (chart) chart.destroy();
-          document.querySelectorAll("input[type='number']").forEach(input => input.value = 0);
+          document
+            .querySelectorAll("input[type='number']")
+            .forEach((input) => (input.value = 0));
         }
       });
 
       document.getElementById("expandChart").addEventListener("click", () => {
-        chartCanvas.style.transform = chartCanvas.style.transform === "scale(1.5)" ? "scale(1)" : "scale(1.5)";
+        chartCanvas.style.transform =
+          chartCanvas.style.transform === "scale(1.5)"
+            ? "scale(1)"
+            : "scale(1.5)";
       });
 
       // الوضع الليلي
@@ -235,7 +250,9 @@
 
       toggleDarkBtn.addEventListener("click", () => {
         document.body.classList.toggle("dark-mode");
-        const mode = document.body.classList.contains("dark-mode") ? "dark" : "light";
+        const mode = document.body.classList.contains("dark-mode")
+          ? "dark"
+          : "light";
         localStorage.setItem("theme", mode);
       });
 
