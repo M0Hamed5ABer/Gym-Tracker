@@ -1,127 +1,227 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Gym tracker</title>
-    <link rel="shortcut icon" href="favicon.png" type="image/x-icon" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+<head>
+  <meta charset="UTF-8" />
+  <title>نظام تتبع تمارين الجيم</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: Arial;
+      text-align: center;
+      direction: rtl;
+      background: #bdf7ff;
+      margin: 20px;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark {
+      background: #111;
+      color: #fff;
+    }
+    #tracker {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      padding: 10px;
+    }
+    .section {
+      margin: 30px 0;
+    }
+    .exercise {
+      background: #fff;
+      color: #000;
+      margin: 10px auto;
+      padding: 10px;
+      width: 100%;
+      max-width: 400px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #ccc;
+      transition: background 0.3s, color 0.3s;
+    }
+    body.dark .exercise {
+      background: #222;
+      color: #fff;
+      box-shadow: 0 0 10px #444;
+    }
+    canvas {
+      max-width: 100%;
+      margin-top: 30px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #000;
+      background-color: #eee;
+      border: none;
+      border-radius: 6px;
+      transition: background 0.3s, color 0.3s;
+    }
+    button:hover {
+      background-color: #000;
+      color: #fff;
+    }
+    body.dark button {
+      background-color: #333;
+      color: #fff;
+    }
+    input[type="number"] {
+      width: 90px;
+      height: 40px;
+      text-align: center;
+      font-size: 1.1rem;
+    }
+    h1, h2, p {
+      margin: 10px 0;
+    }
+    #clearChart {
+      background: red;
+      color: white;
+    }
+    #themeToggle {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <button id="themeToggle">🌙 وضع ليلي</button>
+  <h1>نظام تتبع تمارين الجيم</h1>
+  <div id="tracker"></div>
+
+  <button id="saveProgress">💾 حفظ التغييرات</button>
+
+  <canvas id="progressChart"></canvas>
+  <button id="clearChart">🗑️ مسح المخطط</button>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const exercises = {
+      "تمارين الدفع": ["ضغط أرضي", "ضغط عالي", "فراشة", "كتف جانبي", "كتف علوي", "باي جهاز"],
+      "تمارين السحب": ["سحب أرضي", "سحب عالي", "بايسبس", "دفع خلفي"],
+      "تمارين الرجل": ["سكوات", "لانج", "ديدلفت"]
+    };
+
+    let currentWeights = {};
+    let progressData = JSON.parse(localStorage.getItem("progressData")) || {};
+
+    const trackerDiv = document.getElementById("tracker");
+    const ctx = document.getElementById("progressChart").getContext("2d");
+
+    const chart = new Chart(ctx, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { position: "bottom" },
+          title: { display: true, text: "تطور الأوزان خلال الأسابيع" },
+        },
+      },
+    });
+
+    function getLastWeight(ex) {
+      return progressData[ex]?.slice(-1)[0]?.weight || 0;
+    }
+
+    function createExercises() {
+      for (let group in exercises) {
+        const section = document.createElement("div");
+        section.className = "section";
+        section.innerHTML = `<h2>${group}</h2>`;
+        exercises[group].forEach((exercise) => {
+          const last = getLastWeight(exercise);
+          currentWeights[exercise] = last;
+          const box = document.createElement("div");
+          box.className = "exercise";
+          box.innerHTML = `
+            <p>${exercise}</p>
+            <div class="controls">
+              <button onclick="changeWeight('${exercise}', -2.5)">⬇</button>
+              <input type="number" id="${exercise}-weight" value="${last}" readonly>
+              <button onclick="changeWeight('${exercise}', 2.5)">⬆</button>
+            </div>
+          `;
+          section.appendChild(box);
+        });
+        trackerDiv.appendChild(section);
+      }
+    }
+
+    function changeWeight(ex, delta) {
+      currentWeights[ex] = Math.max(0, (currentWeights[ex] || 0) + delta);
+      document.getElementById(`${ex}-weight`).value = currentWeights[ex];
+    }
+
+    document.getElementById("saveProgress").addEventListener("click", () => {
+      const today = new Date().toLocaleDateString("ar-EG");
+      for (let ex in currentWeights) {
+        if (!progressData[ex]) progressData[ex] = [];
+        progressData[ex].push({ weight: currentWeights[ex], date: today });
+      }
+      localStorage.setItem("progressData", JSON.stringify(progressData));
+      drawChart();
+    });
+
+    function drawChart() {
+      chart.data.labels = [];
+      chart.data.datasets = [];
+
+      const allDates = new Set();
+      for (let ex in progressData) {
+        progressData[ex].forEach(p => allDates.add(p.date));
       }
 
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        direction: rtl;
-        background: #bdf7ff;
-        margin: 0;
-        padding: 20px;
+      const sortedDates = Array.from(allDates).sort();
+      chart.data.labels = sortedDates;
+
+      for (let ex in progressData) {
+        const dataByDate = {};
+        progressData[ex].forEach(p => dataByDate[p.date] = p.weight);
+
+        const weights = sortedDates.map(date => dataByDate[date] ?? null);
+
+        chart.data.datasets.push({
+          label: ex,
+          data: weights,
+          borderColor: '#' + Math.floor(Math.random()*16777215).toString(16),
+          tension: 0.3,
+        });
       }
 
-      h1 {
-        font-size: 1.8rem;
-        margin-bottom: 20px;
-        color: #000;
+      chart.update();
+    }
+
+    document.getElementById("clearChart").addEventListener("click", () => {
+      if (confirm("هل أنت متأكد من مسح البيانات؟")) {
+        localStorage.removeItem("progressData");
+        progressData = {};
+        chart.data.labels = [];
+        chart.data.datasets = [];
+        chart.update();
+        Object.keys(currentWeights).forEach(ex => {
+          currentWeights[ex] = 0;
+          document.getElementById(`${ex}-weight`).value = 0;
+        });
       }
+    });
 
-      h2 {
-        font-size: 1.4rem;
-        color: #000;
-        margin: 15px 0 10px;
-      }
+    document.getElementById("themeToggle").addEventListener("click", () => {
+      document.body.classList.toggle("dark");
+    });
 
-      #tracker {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-        width: 100%;
-        max-width: 500px;
-        margin: 0 auto;
-      }
-
-      .section {
-        margin-bottom: 20px;
-      }
-
-      .exercise {
-        background: #fff;
-        margin: 10px auto;
-        padding: 10px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px #ccc;
-      }
-
-      .controls {
-        margin-top: 10px;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
-
-      canvas {
-        width: 100% !important;
-        max-width: 100%;
-        height: auto !important;
-        margin-top: 30px;
-      }
-
-      button {
-        padding: 10px 18px;
-        margin: 5px;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 600;
-        color: #000;
-        background-color: #eee;
-        border: none;
-        border-radius: 5px;
-      }
-
-      button:hover {
-        color: #fff;
-        background-color: #000;
-      }
-
-      #saveChanges {
-        background-color: green;
-        color: white;
-        margin-top: 10px;
-      }
-
-      #clearChart {
-        background: red;
-        color: white;
-        margin-top: 20px;
-      }
-
-      input[type="number"] {
-        width: 80px;
-        height: 40px;
-        text-align: center;
-        font-size: 1rem;
-      }
-
-      p {
-        font-size: 1.1rem;
-        margin-bottom: 5px;
-        color: #000;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>نظام تتبع تمارين الجيم</h1>
-
-    <div id="tracker"></div>
-
-    <canvas id="progressChart" style="display: none"></canvas>
-    <button id="clearChart">مسح المخطط</button>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="script.js"></script>
-  </body>
+    createExercises();
+  </script>
+</body>
 </html>
