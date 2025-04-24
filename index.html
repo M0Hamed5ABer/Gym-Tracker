@@ -100,6 +100,7 @@
   <button id="saveProgress">💾 حفظ التغييرات</button>
 
   <canvas id="progressChart"></canvas>
+  <button id="toggleChartSize">🔍 تكبير المخطط</button>
   <button id="clearChart">🗑️ مسح المخطط</button>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -222,6 +223,32 @@
     });
 
     createExercises();
+
+    const chartCanvas = document.getElementById("progressChart");
+let isChartFull = false;
+
+document.getElementById("toggleChartSize").addEventListener("click", () => {
+  isChartFull = !isChartFull;
+
+  if (isChartFull) {
+    chartCanvas.style.position = "fixed";
+    chartCanvas.style.top = "50%";
+    chartCanvas.style.left = "50%";
+    chartCanvas.style.transform = "translate(-50%, -50%)";
+    chartCanvas.style.width = "90vw";
+    chartCanvas.style.height = "90vh";
+    chartCanvas.style.zIndex = "9999";
+    chartCanvas.style.backgroundColor = "white";
+    chartCanvas.style.border = "2px solid #333";
+    chartCanvas.style.borderRadius = "10px";
+    chartCanvas.style.boxShadow = "0 0 30px rgba(0,0,0,0.5)";
+    document.getElementById("toggleChartSize").innerText = "❌ إغلاق المخطط";
+  } else {
+    chartCanvas.removeAttribute("style");
+    document.getElementById("toggleChartSize").innerText = "🔍 تكبير المخطط";
+  }
+});
+
   </script>
 </body>
 </html>
