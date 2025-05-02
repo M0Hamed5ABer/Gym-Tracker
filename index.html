@@ -69,7 +69,7 @@
         transition: transform 0.3s ease;
       }
       button {
-        padding: 8px 16px;
+        padding: 8px 32px;
         margin: 8px 5px;
         cursor: pointer;
         font-size: 1rem;
@@ -104,26 +104,46 @@
     <button id="toggleDarkMode">🌙</button>
     <h1 class="main-title">GYM TRACKER</h1>
     <div id="tracker"></div>
+    <video src="" loop></video>
 
-    <button id="saveData">💾 حفظ التغييرات</button>
-    <button id="expandChart">🖼️ تكبير/تصغير المخطط</button>
+    <button id="saveData">💾 Save</button>
+    <button id="expandChart">🖼️ Zoom in/out</button>
     <canvas id="progressChart"></canvas>
-    <button id="clearChart">🗑️ مسح</button>
+    <button id="clearChart">🗑️ Delete</button>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
       // التمارين
       const exercises = {
         "تمارين الدفع": [
+          "فراشة",
           "دفع ارضي",
           "دفع عالي",
-          "فراشة",
           "كتف جانبي",
           "كتف علوي",
+          "كتف امامي دمبل",
           "باي علي الجهاز",
+          "كتف جانبي جهاز",
+          "كتف علوي جهاز",
+          "كتف خلفي جهاز",
+          "بايسبس حبل",
         ],
-        "تمارين السحب": ["سحب أرضي", "سحب عالي", "بايسبس"],
-        "تمارين الرجل": ["سكوات", "لانج", "سمي ديدلفت"],
+        "تمارين السحب": [
+          "سحب أرضي",
+          "سحب عالي",
+          "قطانية",
+          "ترايسبس",
+          "ترايسبس اوفر هد بالدمبل",
+          "ترابيس",
+          "سواعد",
+        ],
+        "تمارين الرجل": [
+          "رجل امامي",
+          "رجل خلفي",
+          "اسكواد",
+          "سمانة علي الاسمس",
+          "بطن",
+        ],
       };
 
       const trackerDiv = document.getElementById("tracker");
@@ -145,11 +165,13 @@
             container.innerHTML = `
               <p>${exercise}</p>
               <div class="controls">
-                <button onclick="changeWeight('${exercise}', -2.5)">⬇</button>
+                <button onclick="changeWeight('${exercise}', 2.5)">⬆</button>
+
                 <input id="${exercise}-weight" type="number" value="${getLastWeight(
               exercise
             )}" readonly>
-                <button onclick="changeWeight('${exercise}', 2.5)">⬆</button>
+                <button onclick="changeWeight('${exercise}', -2.5)">⬇</button>
+
               </div>
             `;
             section.appendChild(container);
